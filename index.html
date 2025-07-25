@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUVAT SPACE BOY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Styles --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        #start-screen { display: flex; }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://img5.pic.in.th/file/secure-sv1/3e08b6045c468391c.png');
+            background-size: cover;
+            animation: scroll-background 20s linear infinite;
+            overflow: hidden;
+        }
+        /* Turbo warp effect */
+        .game-container.turbo-warp {
+            animation-duration: 1.5s;
+        }
+
+
+        canvas {
+            display: block;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* --- UI Elements --- */
+        .back-btn, #score-display {
+            position: absolute;
+            z-index: 20;
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .back-btn { top: 20px; left: 20px; }
+        .back-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        #score-display { top: 20px; right: 20px; cursor: default; }
+
+        /* --- Start & Info Screens --- */
+        #start-screen-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #start-screen-container img {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.7);
+        }
+        .start-buttons {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             gap: 15px;
+             margin-top: 20px;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 250px;
+        }
+        #test-btn { background: linear-gradient(45deg, #0288D1, #29B6F6); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .btn:active { transform: translateY(1px); }
+
+        #info-screen .form-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 80%;
+            max-width: 400px;
+        }
+        #info-screen input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        /* --- Game Screen --- */
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 10px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            gap: 20px;
+        }
+        .control-btn {
+            padding: 20px 10px;
+            width: 40%;
+            max-width: 200px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            box-shadow: inset 0 -6px 0 rgba(0,0,0,0.25), 0 6px 8px rgba(0,0,0,0.3);
+            transition: all 0.1s ease-out;
+        }
+        .control-btn:active {
+            transform: translateY(4px);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25), 0 2px 3px rgba(0,0,0,0.2);
+        }
+        #up-btn { background: linear-gradient(145deg, #2196F3, #64B5F6); }
+        #down-btn { background: linear-gradient(145deg, #FF9800, #FFB74D); }
+        #turbo-warp-btn {
+            background: linear-gradient(145deg, #9c27b0, #ba68c8);
+        }
+        
+        #formula-display {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-shadow: 2px 2px 4px #000;
+            transition: all 0.2s;
+        }
+        #formula-display .placeholder, #formula-display .filled {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 35px;
+            height: 35px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+        }
+        #formula-display .placeholder { background-color: #fff; color: #000; }
+        #formula-display .filled { background-color: #4CAF50; color: #fff; }
+        #formula-display.fail { border-color: #f44336; transform: translateX(-50%) scale(1.05); }
+        #formula-display.success { border-color: #4CAF50; background-color: #4CAF50; }
+
+        /* --- Boss Screen --- */
+        #boss-screen { background-color: #1a0c2e; }
+        .boss-container {
+            background-color: rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            border: 2px solid #fff;
+        }
+        #boss-emoji { font-size: 5rem; margin-bottom: 20px; }
+        #boss-question { font-size: 1.2rem; margin-bottom: 20px; }
+        .answer-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .answer-options button {
+            padding: 15px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            background-color: #4a148c;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .answer-options button:hover { background-color: #7b1fa2; }
+        #fill-in-answer {
+            padding: 15px;
+            font-size: 1.2rem;
+            text-align: center;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            width: 80%;
+            margin: 0 auto 20px auto;
+        }
+        #submit-answer-btn { width: 100%; }
+
+        @keyframes scroll-background {
+            from { background-position: 0 0; }
+            to { background-position: -1920px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="screen">
+        <div id="start-screen-container">
+            <img src="https://img5.pic.in.th/file/secure-sv1/1f74a1b1e8ff880b4.png" alt="ปกเกม SUVAT SPACE BOY">
+            <div class="start-buttons">
+                <button id="practice-btn" class="btn">ฝึกฝน</button>
+                <button id="test-btn" class="btn">ทดสอบ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-screen" class="screen">
+        <button class="back-btn">‹ กลับหน้าหลัก</button>
+        <div class="form-container">
+            <h2>ข้อมูลผู้เล่น (โหมดทดสอบ)</h2>
+            <input type="text" id="fullname" placeholder="ชื่อ-นามสกุล" required>
+            <input type="text" id="class" placeholder="ชั้น" required>
+            <input type="text" id="number" placeholder="เลขที่" required>
+            <button id="play-game-btn" class="btn">เล่นเกม</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <button class="back-btn">‹ กลับหน้าหลัก</button>
+        <div id="score-display">คะแนน: 0</div>
+        <div id="formula-display"></div>
+        <div id="game-container" class="game-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <div class="controls">
+            <button id="up-btn" class="control-btn">ขึ้น</button>
+            <button id="down-btn" class="control-btn">ลง</button>
+            <button id="turbo-warp-btn" class="control-btn" style="display: none;">วาร์ป!</button>
+        </div>
+    </div>
+
+    <div id="boss-screen" class="screen">
+        <div id="score-display-boss" class="score-display-boss" style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem;">คะแนน: 0</div>
+        <div class="boss-container">
+            <div id="boss-emoji"></div>
+            <div id="boss-question"></div>
+            <div id="mcq-section">
+                <div class="answer-options">
+                    <button class="answer-btn"></button>
+                    <button class="answer-btn"></button>
+                    <button class="answer-btn"></button>
+                </div>
+            </div>
+            <div id="fill-in-section" style="display: none;">
+                <input type="number" id="fill-in-answer" placeholder="ใส่คำตอบเป็นตัวเลข">
+                <button id="submit-answer-btn" class="btn">ส่งคำตอบ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State ---
+        let animationId = null;
+        let score = 0;
+        let lastFormulaIndex = -1; // To prevent repeating formulas
+        let lastBossQuestions = []; // To prevent repeating boss questions
+
+        // --- DOM Elements ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            info: document.getElementById('info-screen'),
+            game: document.getElementById('game-screen'),
+            boss: document.getElementById('boss-screen')
+        };
+        const buttons = {
+            practice: document.getElementById('practice-btn'),
+            test: document.getElementById('test-btn'),
+            play: document.getElementById('play-game-btn'),
+            back: document.querySelectorAll('.back-btn'),
+            submitAnswer: document.getElementById('submit-answer-btn'),
+            turboWarp: document.getElementById('turbo-warp-btn')
+        };
+        const scoreDisplays = {
+            game: document.getElementById('score-display'),
+            boss: document.getElementById('score-display-boss')
+        };
+
+        // --- Screen Navigation ---
+        const goToScreen = (screenName) => {
+            Object.values(screens).forEach(s => s.style.display = 'none');
+            screens[screenName].style.display = 'flex';
+        };
+
+        buttons.practice.addEventListener('click', () => {
+            goToScreen('game');
+            initGame();
+        });
+        buttons.test.addEventListener('click', () => goToScreen('info'));
+        buttons.play.addEventListener('click', () => {
+            if (document.getElementById('fullname').value && document.getElementById('class').value && document.getElementById('number').value) {
+                goToScreen('game');
+                initGame();
+            } else {
+                alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+            }
+        });
+        buttons.back.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                goToScreen('start');
+            });
+        });
+
+        const handleWarp = () => {
+            const gameContainer = document.getElementById('game-container');
+            if (gameContainer.classList.contains('turbo-warp')) return; // Prevent multiple warps
+
+            gameContainer.classList.add('turbo-warp');
+            document.querySelectorAll('.control-btn').forEach(b => b.disabled = true);
+
+            setTimeout(() => {
+                if (animationId) cancelAnimationFrame(animationId);
+                gameContainer.classList.remove('turbo-warp');
+                document.querySelectorAll('.control-btn').forEach(b => b.disabled = false);
+                goToScreen('boss');
+                initBossFight();
+            }, 1500);
+        };
+
+        buttons.turboWarp.addEventListener('click', handleWarp);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && buttons.turboWarp.style.display !== 'none') {
+                handleWarp();
+            }
+        });
+
+        function updateScoreDisplay() {
+            scoreDisplays.game.textContent = `คะแนน: ${score}`;
+            scoreDisplays.boss.textContent = `คะแนน: ${score}`;
+        }
+
+        // --- Game Logic ---
+        function initGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const gameContainer = document.getElementById('game-container');
+            const formulaDisplay = document.getElementById('formula-display');
+            
+            updateScoreDisplay();
+
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            window.addEventListener('resize', () => {
+                canvas.width = gameContainer.clientWidth;
+                canvas.height = gameContainer.clientHeight;
+            });
+
+            const allPossibleVars = ['s', 'u', 'v', 'a', 't', 'u²', 'v²', 't²'];
+            let stars = [];
+            let frame = 0;
+            let portal = null;
+
+            const formulas = [
+                { template: ['[v]', ' = ', '[u]', ' + ', '[a]', '[t]'], vars: ['v', 'u', 'a', 't'] },
+                { template: ['[s]', ' = ', '[u]', '[t]', ' + ½', '[a]', '[t²]'], vars: ['s', 'u', 't', 'a', 't²'] },
+                { template: ['[v²]', ' = ', '[u²]', ' + 2', '[a]', '[s]'], vars: ['v²', 'u²', 'a', 's'] },
+                { template: ['[s]', ' = ½(', '[u]','+', '[v]', ')', '[t]'], vars: ['s', 'u', 'v', 't'] }
+            ];
+            let currentFormula = {};
+            let targetVariables = [];
+            let collectedVariables = [];
+
+            const player = {
+                x: 100, y: canvas.height / 2,
+                width: 180, height: 80,
+                img: new Image(),
+                imgWidth: 200, imgHeight: 100,
+                speedY: 0, moveUp: false, moveDown: false
+            };
+            player.img.src = 'https://img5.pic.in.th/file/secure-sv1/286f5cf088c1e26b1.png';
+            player.img.onerror = () => console.error("Failed to load player image.");
+
+            const upBtn = document.getElementById('up-btn');
+            const downBtn = document.getElementById('down-btn');
+            const handleUp = (state) => { player.moveUp = state; };
+            const handleDown = (state) => { player.moveDown = state; };
+            upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleUp(true); });
+            upBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleUp(false); });
+            downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleDown(true); });
+            downBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleDown(false); });
+            upBtn.addEventListener('mousedown', () => handleUp(true));
+            upBtn.addEventListener('mouseup', () => handleUp(false));
+            downBtn.addEventListener('mousedown', () => handleDown(true));
+            downBtn.addEventListener('mouseup', () => handleDown(false));
+            const handleKeyPress = (e) => {
+                if (e.key === 'ArrowUp') handleUp(true);
+                if (e.key === 'ArrowDown') handleDown(true);
+            };
+            const handleKeyRelease = (e) => {
+                if (e.key === 'ArrowUp') handleUp(false);
+                if (e.key === 'ArrowDown') handleDown(false);
+            };
+            window.addEventListener('keydown', handleKeyPress);
+            window.addEventListener('keyup', handleKeyRelease);
+            buttons.back.forEach(btn => btn.addEventListener('click', () => {
+                window.removeEventListener('keydown', handleKeyPress);
+                window.removeEventListener('keyup', handleKeyRelease);
+            }, { once: true }));
+
+            function setupNewFormula() {
+                portal = null;
+                formulaDisplay.classList.remove('success');
+                buttons.turboWarp.style.display = 'none';
+                document.getElementById('up-btn').style.display = 'inline-block';
+                document.getElementById('down-btn').style.display = 'inline-block';
+
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * formulas.length);
+                } while (newIndex === lastFormulaIndex);
+                lastFormulaIndex = newIndex;
+
+                currentFormula = formulas[newIndex];
+                targetVariables = currentFormula.vars;
+                collectedVariables = [];
+                updateFormulaDisplay();
+            }
+            function updateFormulaDisplay() {
+                formulaDisplay.innerHTML = '';
+                let varIndex = 0;
+                currentFormula.template.forEach(part => {
+                    if (part.startsWith('[')) {
+                        const span = document.createElement('span');
+                        if (varIndex < collectedVariables.length) {
+                            span.textContent = collectedVariables[varIndex];
+                            span.className = 'filled';
+                        } else {
+                            span.textContent = '?';
+                            span.className = 'placeholder';
+                        }
+                        formulaDisplay.appendChild(span);
+                        varIndex++;
+                    } else {
+                        formulaDisplay.appendChild(document.createTextNode(part));
+                    }
+                });
+            }
+            function handleIncorrectCollection() {
+                collectedVariables = [];
+                updateFormulaDisplay();
+                formulaDisplay.classList.add('fail');
+                setTimeout(() => formulaDisplay.classList.remove('fail'), 500);
+            }
+            function handleFormulaComplete() {
+                formulaDisplay.classList.add('success');
+                portal = {
+                    x: canvas.width - 100,
+                    y: Math.random() * (canvas.height - 100),
+                    size: 50,
+                    rotation: 0
+                };
+                buttons.turboWarp.style.display = 'inline-block';
+                document.getElementById('up-btn').style.display = 'none';
+                document.getElementById('down-btn').style.display = 'none';
+            }
+
+            function drawStarShape(cx, cy, spikes, outerRadius, innerRadius) {
+                let rot = Math.PI / 2 * 3;
+                let x = cx; let y = cy;
+                let step = Math.PI / spikes;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius;
+                    ctx.lineTo(x, y); rot += step;
+                    x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y); rot += step;
+                }
+                ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
+            }
+            function handleStars() {
+                if (frame % 75 === 0 && !portal) {
+                    let letterToSpawn;
+                    const chanceForCorrect = 0.4;
+                    if (Math.random() < chanceForCorrect) {
+                        letterToSpawn = targetVariables[collectedVariables.length];
+                    } else {
+                        letterToSpawn = allPossibleVars[Math.floor(Math.random() * allPossibleVars.length)];
+                    }
+                    stars.push({
+                        x: canvas.width, y: Math.random() * (canvas.height - 50),
+                        size: 35, // Increased size
+                        letter: letterToSpawn,
+                        speed: 2 + Math.random() * 2 + 1
+                    });
+                }
+                for (let i = stars.length - 1; i >= 0; i--) {
+                    const star = stars[i];
+                    star.x -= star.speed;
+                    ctx.fillStyle = '#FFD700';
+                    drawStarShape(star.x, star.y, 5, star.size, star.size / 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'black';
+                    ctx.font = 'bold 24px Kanit'; // Increased font size
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(star.letter, star.x, star.y);
+                    
+                    const playerHitboxX = player.x + (player.imgWidth - player.width) / 2;
+                    const playerHitboxY = player.y + (player.imgHeight - player.height) / 2;
+                    const starHitboxX = star.x - star.size;
+                    const starHitboxY = star.y - star.size;
+                    const starHitboxSize = star.size * 2;
+
+                    if (playerHitboxX < starHitboxX + starHitboxSize && playerHitboxX + player.width > starHitboxX &&
+                        playerHitboxY < starHitboxY + starHitboxSize && playerHitboxY + player.height > starHitboxY) {
+                        
+                        if (!portal) {
+                            const targetLetter = targetVariables[collectedVariables.length];
+                            if (star.letter === targetLetter) {
+                                collectedVariables.push(star.letter);
+                                updateFormulaDisplay();
+                                if(collectedVariables.length === targetVariables.length) {
+                                    handleFormulaComplete();
+                                }
+                            } else {
+                                handleIncorrectCollection();
+                            }
+                        }
+                        stars.splice(i, 1);
+                        continue;
+                    }
+                    if (star.x + star.size < 0) { stars.splice(i, 1); }
+                }
+            }
+            function handlePortal() {
+                if (!portal) return;
+                portal.rotation += 0.05;
+                ctx.save();
+                ctx.translate(portal.x, portal.y);
+                ctx.rotate(portal.rotation);
+                const gradient = ctx.createRadialGradient(0, 0, portal.size * 0.5, 0, 0, portal.size);
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(0.5, '#9c27b0');
+                gradient.addColorStop(1, '#000');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, portal.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function updatePlayer() {
+                player.speedY = 0;
+                if (player.moveUp) player.speedY = -5;
+                if (player.moveDown) player.speedY = 5;
+                player.y += player.speedY;
+                if (player.y < 0) player.y = 0;
+                if (player.y > canvas.height - player.imgHeight) {
+                    player.y = canvas.height - player.imgHeight;
+                }
+            }
+            function drawPlayer() {
+                ctx.drawImage(player.img, player.x, player.y, player.imgWidth, player.imgHeight);
+            }
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                updatePlayer();
+                drawPlayer();
+                handleStars();
+                handlePortal();
+                frame++;
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            setupNewFormula();
+            player.img.onload = animate;
+            if (player.img.complete) animate();
+        }
+
+        // --- Boss Fight Logic ---
+        function initBossFight() {
+            const bossEmoji = document.getElementById('boss-emoji');
+            const bossQuestion = document.getElementById('boss-question');
+            const mcqSection = document.getElementById('mcq-section');
+            const fillInSection = document.getElementById('fill-in-section');
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            const fillInInput = document.getElementById('fill-in-answer');
+            
+            updateScoreDisplay();
+
+            const emojis = ['👽', '👾', '🤖', '🎃', '👹', '🤡'];
+            const allBossQuestions = [
+                {
+                    type: 'mcq',
+                    id: 1,
+                    setup: () => {
+                        const u = Math.floor(Math.random() * 5) + 1;
+                        const t = Math.floor(Math.random() * 5) + 2;
+                        const a = 2;
+                        const v = u + a * t;
+                        bossQuestion.textContent = `วัตถุมีความเร็วต้น ${u} m/s เคลื่อนที่ด้วยความเร่ง ${a} m/s² เป็นเวลา ${t} วินาที จะมีความเร็วสุดท้ายเท่าใด?`;
+                        const options = [v, v + 2, v - 1].sort(() => Math.random() - 0.5);
+                        answerButtons.forEach((btn, i) => {
+                            btn.textContent = `${options[i]} m/s`;
+                            btn.onclick = () => handleAnswer(options[i] === v);
+                        });
+                    }
+                },
+                {
+                    type: 'fill',
+                    id: 2,
+                    setup: () => {
+                        const v = (Math.floor(Math.random() * 5) + 5) * 2;
+                        const u = Math.floor(Math.random() * 4) * 2;
+                        const t = 2;
+                        const s = 0.5 * (u + v) * t;
+                        bossQuestion.textContent = `รถยนต์เคลื่อนที่ ${t} วินาที จากความเร็ว ${u} m/s เป็น ${v} m/s ได้ระยะทางเท่าใด (m)?`;
+                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === s);
+                    }
+                },
+                {
+                    type: 'mcq',
+                    id: 3,
+                    setup: () => {
+                        const s = (Math.floor(Math.random() * 5) + 5) * 10; // 50, 60...
+                        const t = 10;
+                        const v_avg = s / t;
+                        bossQuestion.textContent = `นักวิ่ง วิ่งได้ระยะทาง ${s} เมตร ในเวลา ${t} วินาที ความเร็วเฉลี่ยของเขาคือเท่าใด?`;
+                        const options = [v_avg, v_avg + 1, v_avg - 1].sort(() => Math.random() - 0.5);
+                        answerButtons.forEach((btn, i) => {
+                            btn.textContent = `${options[i]} m/s`;
+                            btn.onclick = () => handleAnswer(options[i] === v_avg);
+                        });
+                    }
+                },
+                {
+                    type: 'fill',
+                    id: 4,
+                    setup: () => {
+                        const u = 20;
+                        const a = -2; // deceleration
+                        const v = 10;
+                        const t = (v - u) / a;
+                        bossQuestion.textContent = `รถเบรกจากความเร็ว ${u} m/s จนเหลือ ${v} m/s ด้วยความหน่วง ${-a} m/s² ต้องใช้เวลากี่วินาที?`;
+                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === t);
+                    }
+                }
+            ];
+            
+            let questionNumber = 1;
+            
+            // Filter out last questions and pick 2 new ones
+            const availableQuestions = allBossQuestions.filter(q => !lastBossQuestions.includes(q.id));
+            const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
+            const questionsForThisRound = shuffled.slice(0, 2);
+            lastBossQuestions = questionsForThisRound.map(q => q.id);
+
+
+            function setupQuestion(qNum) {
+                fillInInput.value = '';
+                mcqSection.style.display = 'none';
+                fillInSection.style.display = 'none';
+
+                const questionData = questionsForThisRound[qNum - 1];
+                if (!questionData) { // Failsafe if we run out of questions
+                    goToScreen('game');
+                    initGame();
+                    return;
+                }
+
+                questionData.setup();
+                if(questionData.type === 'mcq') {
+                    mcqSection.style.display = 'block';
+                } else {
+                    fillInSection.style.display = 'block';
+                }
+            }
+
+            function handleAnswer(isCorrect) {
+                if (isCorrect) {
+                    score++;
+                    updateScoreDisplay();
+                }
+                if (questionNumber === 1) {
+                    questionNumber++;
+                    setupQuestion(2);
+                } else {
+                    goToScreen('game');
+                    initGame();
+                }
+            }
+
+            bossEmoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            setupQuestion(1);
+        }
+    </script>
+</body>
+</html>
