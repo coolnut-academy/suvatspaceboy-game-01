@@ -44,11 +44,12 @@
             animation: scroll-background 20s linear infinite;
             overflow: hidden;
         }
-        /* Turbo warp effect */
         .game-container.turbo-warp {
             animation-duration: 1.5s;
         }
-
+        .game-container.paused {
+            animation-play-state: paused;
+        }
 
         canvas {
             display: block;
@@ -59,21 +60,39 @@
         }
 
         /* --- UI Elements --- */
-        .back-btn, #score-display {
+        .top-ui-container {
             position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
             z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ui-box {
             padding: 10px 20px;
             background-color: rgba(0, 0, 0, 0.6);
             color: white;
             border: 2px solid white;
             border-radius: 50px;
-            cursor: pointer;
             font-size: 1rem;
             font-weight: bold;
         }
-        .back-btn { top: 20px; left: 20px; }
+        #stats-btn {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #stats-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+        }
         .back-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
-        #score-display { top: 20px; right: 20px; cursor: default; }
 
         /* --- Start & Info Screens --- */
         #start-screen-container {
@@ -85,21 +104,23 @@
         }
         #start-screen-container img {
             max-width: 90%;
-            max-height: 80vh;
+            max-height: 75vh;
             object-fit: contain;
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(76, 175, 80, 0.7);
         }
         .start-buttons {
              display: flex;
-             flex-direction: column;
+             flex-direction: row;
+             flex-wrap: wrap;
+             justify-content: center;
              align-items: center;
              gap: 15px;
              margin-top: 20px;
         }
         .btn {
             padding: 15px 30px;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: white;
             background: linear-gradient(45deg, #4CAF50, #81C784);
@@ -108,9 +129,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            width: 250px;
+            width: 180px;
         }
         #test-btn { background: linear-gradient(45deg, #0288D1, #29B6F6); }
+        #learn-btn { background: linear-gradient(45deg, #FF9800, #FFB74D); }
         .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
         .btn:active { transform: translateY(1px); }
 
@@ -118,17 +140,52 @@
             background-color: rgba(0, 0, 0, 0.7);
             padding: 40px;
             border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            width: 80%;
-            max-width: 400px;
+            gap: 15px;
         }
         #info-screen input {
-            padding: 10px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             border: 1px solid #ccc;
-            font-size: 1rem;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        /* --- Learn Screen --- */
+        #learn-screen {
+            background-color: #0d1b2a;
+            justify-content: flex-start;
+            padding-top: 80px;
+        }
+        .learn-content-container {
+            width: 90%;
+            max-width: 800px;
+            height: calc(100% - 100px);
+            overflow-y: auto;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+        .learn-content-container h2 { color: #FFD700; }
+        .formula-card {
+            background-color: #2c3e50;
+            border-left: 5px solid #FF9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .formula-card h3 { margin-top: 0; color: #64B5F6; }
+        .formula-card .calculation {
+            background-color: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            color: #4CAF50;
+            font-weight: bold;
         }
 
         /* --- Game Screen --- */
@@ -167,16 +224,14 @@
         }
         #up-btn { background: linear-gradient(145deg, #2196F3, #64B5F6); }
         #down-btn { background: linear-gradient(145deg, #FF9800, #FFB74D); }
-        #turbo-warp-btn {
-            background: linear-gradient(145deg, #9c27b0, #ba68c8);
-        }
+        #turbo-warp-btn { background: linear-gradient(145deg, #9c27b0, #ba68c8); }
         
         #formula-display {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 20;
+            z-index: 15;
             background-color: rgba(0, 0, 0, 0.7);
             border: 2px solid #fff;
             border-radius: 15px;
@@ -236,7 +291,54 @@
             width: 80%;
             margin: 0 auto 20px auto;
         }
-        #submit-answer-btn { width: 100%; }
+        
+        /* --- Stats Modal --- */
+        #stats-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+        }
+        .stats-content {
+            background-color: #2c3e50;
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #7b1fa2;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #stats-player-info {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #e0e0e0;
+            border-bottom: 2px solid #7b1fa2;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        #stats-history-container {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+        .history-item {
+            background-color: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .history-item p { margin: 5px 0; }
+        .history-item .status-correct { color: #4CAF50; font-weight: bold; }
+        .history-item .status-incorrect { color: #f44336; font-weight: bold; }
 
         @keyframes scroll-background {
             from { background-position: 0 0; }
@@ -248,16 +350,19 @@
 
     <div id="start-screen" class="screen">
         <div id="start-screen-container">
-            <img src="https://img5.pic.in.th/file/secure-sv1/1f74a1b1e8ff880b4.png" alt="ปกเกม SUVAT SPACE BOY">
+            <img src="https://img5.pic.in.th/file/secure-sv1/-32ef60d6dc88fcbf3.png" alt="ปกเกม SUVAT SPACE BOY">
             <div class="start-buttons">
                 <button id="practice-btn" class="btn">ฝึกฝน</button>
                 <button id="test-btn" class="btn">ทดสอบ</button>
+                <button id="learn-btn" class="btn">เรียนรู้</button>
             </div>
         </div>
     </div>
 
     <div id="info-screen" class="screen">
-        <button class="back-btn">‹ กลับหน้าหลัก</button>
+        <div class="top-ui-container">
+             <button class="back-btn ui-box">‹ กลับหน้าหลัก</button>
+        </div>
         <div class="form-container">
             <h2>ข้อมูลผู้เล่น (โหมดทดสอบ)</h2>
             <input type="text" id="fullname" placeholder="ชื่อ-นามสกุล" required>
@@ -267,9 +372,50 @@
         </div>
     </div>
 
+    <div id="learn-screen" class="screen">
+        <div class="top-ui-container">
+            <button class="back-btn ui-box">‹ กลับหน้าหลัก</button>
+        </div>
+        <div class="learn-content-container">
+            <h2>สูตรการเคลื่อนที่แนวตรง (SUVAT)</h2>
+            <div class="formula-card">
+                <h3>1. v = u + at</h3>
+                <p><strong>คำอธิบาย:</strong> หาความเร็วสุดท้าย (v) เมื่อทราบความเร็วต้น (u), ความเร่ง (a), และเวลา (t)</p>
+                <p><strong>ตัวอย่าง:</strong> รถไฟเริ่มเคลื่อนที่จากหยุดนิ่ง (u=0) ด้วยความเร่ง 2 m/s² เป็นเวลา 10 วินาที</p>
+                <p class="calculation">v = 0 + (2 * 10) = 20 m/s</p>
+            </div>
+            <div class="formula-card">
+                <h3>2. s = ut + ½at²</h3>
+                <p><strong>คำอธิบาย:</strong> หาระยะทาง (s) เมื่อทราบความเร็วต้น (u), เวลา (t), และความเร่ง (a)</p>
+                <p><strong>ตัวอย่าง:</strong> ก้อนหินถูกปล่อยจากหน้าผา (u=0) โดยมีความเร่งโน้มถ่วง 9.8 m/s² เป็นเวลา 3 วินาที</p>
+                <p class="calculation">s = (0 * 3) + 0.5 * 9.8 * (3²) = 44.1 เมตร</p>
+            </div>
+            <div class="formula-card">
+                <h3>3. v² = u² + 2as</h3>
+                <p><strong>คำอธิบาย:</strong> หาความเร็วสุดท้าย (v) เมื่อไม่ทราบเวลา (t) แต่ทราบระยะทาง (s)</p>
+                <p><strong>ตัวอย่าง:</strong> นักปั่นจักรยานเร่งจาก 5 m/s (u=5) ด้วยความเร่ง 1 m/s² เป็นระยะทาง 50 เมตร</p>
+                <p class="calculation">v² = 5² + 2 * 1 * 50 = 25 + 100 = 125</p>
+                <p class="calculation">v = √125 ≈ 11.18 m/s</p>
+            </div>
+            <div class="formula-card">
+                <h3>4. s = ½(u + v)t</h3>
+                <p><strong>คำอธิบาย:</strong> หาระยะทาง (s) เมื่อทราบความเร็วต้น (u), ความเร็วสุดท้าย (v), และเวลา (t)</p>
+                <p><strong>ตัวอย่าง:</strong> รถยนต์เคลื่อนที่เป็นเวลา 10 วินาที จากความเร็ว 10 m/s (u=10) เป็น 30 m/s (v=30)</p>
+                <p class="calculation">s = 0.5 * (10 + 30) * 10 = 0.5 * 40 * 10 = 200 เมตร</p>
+            </div>
+        </div>
+    </div>
+
     <div id="game-screen" class="screen">
-        <button class="back-btn">‹ กลับหน้าหลัก</button>
-        <div id="score-display">คะแนน: 0</div>
+        <div class="top-ui-container">
+            <div>
+                 <button class="back-btn ui-box">‹ กลับหน้าหลัก</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <span id="stats-btn" class="ui-box">สถิติ</span>
+                <span id="score-display" class="ui-box">คะแนน: 0</span>
+            </div>
+        </div>
         <div id="formula-display"></div>
         <div id="game-container" class="game-container">
             <canvas id="gameCanvas"></canvas>
@@ -282,7 +428,10 @@
     </div>
 
     <div id="boss-screen" class="screen">
-        <div id="score-display-boss" class="score-display-boss" style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem;">คะแนน: 0</div>
+        <div class="top-ui-container">
+            <div></div> <!-- Spacer -->
+            <div id="score-display-boss" class="ui-box">คะแนน: 0</div>
+        </div>
         <div class="boss-container">
             <div id="boss-emoji"></div>
             <div id="boss-question"></div>
@@ -300,31 +449,53 @@
         </div>
     </div>
 
+    <!-- Stats Modal -->
+    <div id="stats-modal">
+        <div class="stats-content">
+            <div id="stats-player-info"></div>
+            <div id="stats-history-container"></div>
+            <button id="resume-game-btn" class="btn" style="margin-top: 20px;">กลับไปเล่นเกม</button>
+        </div>
+    </div>
+
+
     <script>
         // --- Global State ---
         let animationId = null;
         let score = 0;
-        let lastFormulaIndex = -1; // To prevent repeating formulas
-        let lastBossQuestions = []; // To prevent repeating boss questions
+        let lastFormulaIndex = -1;
+        let lastBossQuestions = [];
+        let playerInfo = {};
+        let answerHistory = [];
+        let isGamePaused = false;
 
         // --- DOM Elements ---
         const screens = {
             start: document.getElementById('start-screen'),
             info: document.getElementById('info-screen'),
             game: document.getElementById('game-screen'),
-            boss: document.getElementById('boss-screen')
+            boss: document.getElementById('boss-screen'),
+            learn: document.getElementById('learn-screen')
         };
         const buttons = {
             practice: document.getElementById('practice-btn'),
             test: document.getElementById('test-btn'),
+            learn: document.getElementById('learn-btn'),
             play: document.getElementById('play-game-btn'),
             back: document.querySelectorAll('.back-btn'),
             submitAnswer: document.getElementById('submit-answer-btn'),
-            turboWarp: document.getElementById('turbo-warp-btn')
+            turboWarp: document.getElementById('turbo-warp-btn'),
+            stats: document.getElementById('stats-btn'),
+            resume: document.getElementById('resume-game-btn')
         };
         const scoreDisplays = {
             game: document.getElementById('score-display'),
             boss: document.getElementById('score-display-boss')
+        };
+        const statsModal = {
+            modal: document.getElementById('stats-modal'),
+            playerInfo: document.getElementById('stats-player-info'),
+            historyContainer: document.getElementById('stats-history-container')
         };
 
         // --- Screen Navigation ---
@@ -334,12 +505,18 @@
         };
 
         buttons.practice.addEventListener('click', () => {
+            playerInfo = { name: 'บุคคลนิรนามผู้กำลังฝึกวิทยายุทธ', class: '', number: '' };
             goToScreen('game');
             initGame();
         });
         buttons.test.addEventListener('click', () => goToScreen('info'));
+        buttons.learn.addEventListener('click', () => goToScreen('learn'));
         buttons.play.addEventListener('click', () => {
-            if (document.getElementById('fullname').value && document.getElementById('class').value && document.getElementById('number').value) {
+            const name = document.getElementById('fullname').value;
+            const p_class = document.getElementById('class').value;
+            const p_num = document.getElementById('number').value;
+            if (name && p_class && p_num) {
+                playerInfo = { name, class: p_class, number: p_num };
                 goToScreen('game');
                 initGame();
             } else {
@@ -352,13 +529,21 @@
                     cancelAnimationFrame(animationId);
                     animationId = null;
                 }
+                // --- RESETTING GLOBAL STATE ---
+                score = 0;
+                answerHistory = [];
+                lastFormulaIndex = -1;
+                lastBossQuestions = [];
+                isGamePaused = false;
+                document.getElementById('game-container').classList.remove('paused');
+                // --- END RESET ---
                 goToScreen('start');
             });
         });
 
         const handleWarp = () => {
             const gameContainer = document.getElementById('game-container');
-            if (gameContainer.classList.contains('turbo-warp')) return; // Prevent multiple warps
+            if (gameContainer.classList.contains('turbo-warp')) return;
 
             gameContainer.classList.add('turbo-warp');
             document.querySelectorAll('.control-btn').forEach(b => b.disabled = true);
@@ -384,60 +569,116 @@
             scoreDisplays.boss.textContent = `คะแนน: ${score}`;
         }
 
+        // --- Pause & Stats Logic ---
+        const pauseGame = () => {
+            if (isGamePaused) return;
+            isGamePaused = true;
+            cancelAnimationFrame(animationId);
+            animationId = null;
+            document.getElementById('game-container').classList.add('paused');
+            populateStatsModal();
+            statsModal.modal.style.display = 'flex';
+        };
+
+        const resumeGame = () => {
+            if (!isGamePaused) return;
+            isGamePaused = false;
+            statsModal.modal.style.display = 'none';
+            document.getElementById('game-container').classList.remove('paused');
+            initGameLoop();
+        };
+
+        buttons.stats.onclick = pauseGame;
+        buttons.resume.onclick = resumeGame;
+
+        function populateStatsModal() {
+            let infoHtml = '';
+            if (playerInfo.class) {
+                infoHtml = `ผู้เล่น: ${playerInfo.name}<br>ชั้น: ${playerInfo.class} เลขที่: ${playerInfo.number}`;
+            } else {
+                infoHtml = playerInfo.name;
+            }
+            infoHtml += `<br><b style="color: #FFD700;">คะแนนปัจจุบัน: ${score}</b>`;
+            statsModal.playerInfo.innerHTML = infoHtml;
+
+            statsModal.historyContainer.innerHTML = '';
+            if (answerHistory.length === 0) {
+                statsModal.historyContainer.innerHTML = '<p>ยังไม่มีประวัติการตอบคำถาม</p>';
+                return;
+            }
+            answerHistory.slice().reverse().forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'history-item';
+                const statusClass = item.isCorrect ? 'status-correct' : 'status-incorrect';
+                const statusText = item.isCorrect ? 'ถูกต้อง' : 'ผิด';
+                itemDiv.innerHTML = `
+                    <p><b>คำถาม:</b> ${item.question}</p>
+                    <p><b>คำตอบของคุณ:</b> ${item.yourAnswer || '-'}</p>
+                    <p class="${statusClass}"><b>ผลลัพธ์:</b> ${statusText}</p>
+                `;
+                statsModal.historyContainer.appendChild(itemDiv);
+            });
+        }
+
         // --- Game Logic ---
+        let gameInstance = {};
+
         function initGame() {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            const gameContainer = document.getElementById('game-container');
-            const formulaDisplay = document.getElementById('formula-display');
+            isGamePaused = false;
+            gameInstance.canvas = document.getElementById('gameCanvas');
+            gameInstance.ctx = gameInstance.canvas.getContext('2d');
+            gameInstance.gameContainer = document.getElementById('game-container');
+            gameInstance.formulaDisplay = document.getElementById('formula-display');
             
             updateScoreDisplay();
 
-            canvas.width = gameContainer.clientWidth;
-            canvas.height = gameContainer.clientHeight;
-            window.addEventListener('resize', () => {
-                canvas.width = gameContainer.clientWidth;
-                canvas.height = gameContainer.clientHeight;
-            });
+            gameInstance.canvas.width = gameInstance.gameContainer.clientWidth;
+            gameInstance.canvas.height = gameInstance.gameContainer.clientHeight;
+            window.onresize = () => {
+                if(gameInstance.canvas) {
+                    gameInstance.canvas.width = gameInstance.gameContainer.clientWidth;
+                    gameInstance.canvas.height = gameInstance.gameContainer.clientHeight;
+                }
+            };
 
-            const allPossibleVars = ['s', 'u', 'v', 'a', 't', 'u²', 'v²', 't²'];
-            let stars = [];
-            let frame = 0;
-            let portal = null;
+            gameInstance.allPossibleVars = ['s', 'u', 'v', 'a', 't', 'u²', 'v²', 't²'];
+            gameInstance.stars = [];
+            gameInstance.frame = 0;
+            gameInstance.portal = null;
+            gameInstance.speed = 2;
 
-            const formulas = [
+            gameInstance.formulas = [
                 { template: ['[v]', ' = ', '[u]', ' + ', '[a]', '[t]'], vars: ['v', 'u', 'a', 't'] },
                 { template: ['[s]', ' = ', '[u]', '[t]', ' + ½', '[a]', '[t²]'], vars: ['s', 'u', 't', 'a', 't²'] },
                 { template: ['[v²]', ' = ', '[u²]', ' + 2', '[a]', '[s]'], vars: ['v²', 'u²', 'a', 's'] },
                 { template: ['[s]', ' = ½(', '[u]','+', '[v]', ')', '[t]'], vars: ['s', 'u', 'v', 't'] }
             ];
-            let currentFormula = {};
-            let targetVariables = [];
-            let collectedVariables = [];
-
-            const player = {
-                x: 100, y: canvas.height / 2,
+            
+            gameInstance.player = {
+                x: 100, y: gameInstance.canvas.height / 2,
                 width: 180, height: 80,
                 img: new Image(),
                 imgWidth: 200, imgHeight: 100,
                 speedY: 0, moveUp: false, moveDown: false
             };
-            player.img.src = 'https://img5.pic.in.th/file/secure-sv1/286f5cf088c1e26b1.png';
-            player.img.onerror = () => console.error("Failed to load player image.");
+            gameInstance.player.img.src = 'https://img5.pic.in.th/file/secure-sv1/286f5cf088c1e26b1.png';
+            gameInstance.player.img.onerror = () => console.error("Failed to load player image.");
 
             const upBtn = document.getElementById('up-btn');
             const downBtn = document.getElementById('down-btn');
-            const handleUp = (state) => { player.moveUp = state; };
-            const handleDown = (state) => { player.moveDown = state; };
-            upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleUp(true); });
-            upBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleUp(false); });
-            downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleDown(true); });
-            downBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleDown(false); });
-            upBtn.addEventListener('mousedown', () => handleUp(true));
-            upBtn.addEventListener('mouseup', () => handleUp(false));
-            downBtn.addEventListener('mousedown', () => handleDown(true));
-            downBtn.addEventListener('mouseup', () => handleDown(false));
+            const handleUp = (state) => { gameInstance.player.moveUp = state; };
+            const handleDown = (state) => { gameInstance.player.moveDown = state; };
+            upBtn.ontouchstart = (e) => { e.preventDefault(); handleUp(true); };
+            upBtn.ontouchend = (e) => { e.preventDefault(); handleUp(false); };
+            downBtn.ontouchstart = (e) => { e.preventDefault(); handleDown(true); };
+            downBtn.ontouchend = (e) => { e.preventDefault(); handleDown(false); };
+            upBtn.onmousedown = () => handleUp(true);
+            upBtn.onmouseup = () => handleUp(false);
+            downBtn.onmousedown = () => handleDown(true);
+            downBtn.onmouseup = () => handleDown(false);
+            
             const handleKeyPress = (e) => {
+                if(isGamePaused) return;
                 if (e.key === 'ArrowUp') handleUp(true);
                 if (e.key === 'ArrowDown') handleDown(true);
             };
@@ -445,181 +686,198 @@
                 if (e.key === 'ArrowUp') handleUp(false);
                 if (e.key === 'ArrowDown') handleDown(false);
             };
-            window.addEventListener('keydown', handleKeyPress);
-            window.addEventListener('keyup', handleKeyRelease);
-            buttons.back.forEach(btn => btn.addEventListener('click', () => {
-                window.removeEventListener('keydown', handleKeyPress);
-                window.removeEventListener('keyup', handleKeyRelease);
-            }, { once: true }));
-
-            function setupNewFormula() {
-                portal = null;
-                formulaDisplay.classList.remove('success');
-                buttons.turboWarp.style.display = 'none';
-                document.getElementById('up-btn').style.display = 'inline-block';
-                document.getElementById('down-btn').style.display = 'inline-block';
-
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * formulas.length);
-                } while (newIndex === lastFormulaIndex);
-                lastFormulaIndex = newIndex;
-
-                currentFormula = formulas[newIndex];
-                targetVariables = currentFormula.vars;
-                collectedVariables = [];
-                updateFormulaDisplay();
-            }
-            function updateFormulaDisplay() {
-                formulaDisplay.innerHTML = '';
-                let varIndex = 0;
-                currentFormula.template.forEach(part => {
-                    if (part.startsWith('[')) {
-                        const span = document.createElement('span');
-                        if (varIndex < collectedVariables.length) {
-                            span.textContent = collectedVariables[varIndex];
-                            span.className = 'filled';
-                        } else {
-                            span.textContent = '?';
-                            span.className = 'placeholder';
-                        }
-                        formulaDisplay.appendChild(span);
-                        varIndex++;
-                    } else {
-                        formulaDisplay.appendChild(document.createTextNode(part));
-                    }
-                });
-            }
-            function handleIncorrectCollection() {
-                collectedVariables = [];
-                updateFormulaDisplay();
-                formulaDisplay.classList.add('fail');
-                setTimeout(() => formulaDisplay.classList.remove('fail'), 500);
-            }
-            function handleFormulaComplete() {
-                formulaDisplay.classList.add('success');
-                portal = {
-                    x: canvas.width - 100,
-                    y: Math.random() * (canvas.height - 100),
-                    size: 50,
-                    rotation: 0
-                };
-                buttons.turboWarp.style.display = 'inline-block';
-                document.getElementById('up-btn').style.display = 'none';
-                document.getElementById('down-btn').style.display = 'none';
-            }
-
-            function drawStarShape(cx, cy, spikes, outerRadius, innerRadius) {
-                let rot = Math.PI / 2 * 3;
-                let x = cx; let y = cy;
-                let step = Math.PI / spikes;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - outerRadius);
-                for (let i = 0; i < spikes; i++) {
-                    x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius;
-                    ctx.lineTo(x, y); rot += step;
-                    x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius;
-                    ctx.lineTo(x, y); rot += step;
-                }
-                ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
-            }
-            function handleStars() {
-                if (frame % 75 === 0 && !portal) {
-                    let letterToSpawn;
-                    const chanceForCorrect = 0.4;
-                    if (Math.random() < chanceForCorrect) {
-                        letterToSpawn = targetVariables[collectedVariables.length];
-                    } else {
-                        letterToSpawn = allPossibleVars[Math.floor(Math.random() * allPossibleVars.length)];
-                    }
-                    stars.push({
-                        x: canvas.width, y: Math.random() * (canvas.height - 50),
-                        size: 35, // Increased size
-                        letter: letterToSpawn,
-                        speed: 2 + Math.random() * 2 + 1
-                    });
-                }
-                for (let i = stars.length - 1; i >= 0; i--) {
-                    const star = stars[i];
-                    star.x -= star.speed;
-                    ctx.fillStyle = '#FFD700';
-                    drawStarShape(star.x, star.y, 5, star.size, star.size / 2);
-                    ctx.fill();
-                    ctx.fillStyle = 'black';
-                    ctx.font = 'bold 24px Kanit'; // Increased font size
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(star.letter, star.x, star.y);
-                    
-                    const playerHitboxX = player.x + (player.imgWidth - player.width) / 2;
-                    const playerHitboxY = player.y + (player.imgHeight - player.height) / 2;
-                    const starHitboxX = star.x - star.size;
-                    const starHitboxY = star.y - star.size;
-                    const starHitboxSize = star.size * 2;
-
-                    if (playerHitboxX < starHitboxX + starHitboxSize && playerHitboxX + player.width > starHitboxX &&
-                        playerHitboxY < starHitboxY + starHitboxSize && playerHitboxY + player.height > starHitboxY) {
-                        
-                        if (!portal) {
-                            const targetLetter = targetVariables[collectedVariables.length];
-                            if (star.letter === targetLetter) {
-                                collectedVariables.push(star.letter);
-                                updateFormulaDisplay();
-                                if(collectedVariables.length === targetVariables.length) {
-                                    handleFormulaComplete();
-                                }
-                            } else {
-                                handleIncorrectCollection();
-                            }
-                        }
-                        stars.splice(i, 1);
-                        continue;
-                    }
-                    if (star.x + star.size < 0) { stars.splice(i, 1); }
-                }
-            }
-            function handlePortal() {
-                if (!portal) return;
-                portal.rotation += 0.05;
-                ctx.save();
-                ctx.translate(portal.x, portal.y);
-                ctx.rotate(portal.rotation);
-                const gradient = ctx.createRadialGradient(0, 0, portal.size * 0.5, 0, 0, portal.size);
-                gradient.addColorStop(0, '#fff');
-                gradient.addColorStop(0.5, '#9c27b0');
-                gradient.addColorStop(1, '#000');
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(0, 0, portal.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-
-            function updatePlayer() {
-                player.speedY = 0;
-                if (player.moveUp) player.speedY = -5;
-                if (player.moveDown) player.speedY = 5;
-                player.y += player.speedY;
-                if (player.y < 0) player.y = 0;
-                if (player.y > canvas.height - player.imgHeight) {
-                    player.y = canvas.height - player.imgHeight;
-                }
-            }
-            function drawPlayer() {
-                ctx.drawImage(player.img, player.x, player.y, player.imgWidth, player.imgHeight);
-            }
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                updatePlayer();
-                drawPlayer();
-                handleStars();
-                handlePortal();
-                frame++;
-                animationId = requestAnimationFrame(animate);
-            }
+            window.onkeydown = handleKeyPress;
+            window.onkeyup = handleKeyRelease;
             
             setupNewFormula();
-            player.img.onload = animate;
-            if (player.img.complete) animate();
+            gameInstance.player.img.onload = () => initGameLoop();
+            if (gameInstance.player.img.complete) initGameLoop();
+        }
+
+        function setupNewFormula() {
+            gameInstance.portal = null;
+            gameInstance.formulaDisplay.classList.remove('success');
+            buttons.turboWarp.style.display = 'none';
+            document.getElementById('up-btn').style.display = 'inline-block';
+            document.getElementById('down-btn').style.display = 'inline-block';
+
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * gameInstance.formulas.length);
+            } while (newIndex === lastFormulaIndex);
+            lastFormulaIndex = newIndex;
+
+            gameInstance.currentFormula = gameInstance.formulas[newIndex];
+            gameInstance.targetVariables = gameInstance.currentFormula.vars;
+            gameInstance.collectedVariables = [];
+            updateFormulaDisplay();
+        }
+        
+        function updateFormulaDisplay() {
+            gameInstance.formulaDisplay.innerHTML = '';
+            let varIndex = 0;
+            gameInstance.currentFormula.template.forEach(part => {
+                if (part.startsWith('[')) {
+                    const span = document.createElement('span');
+                    if (varIndex < gameInstance.collectedVariables.length) {
+                        span.textContent = gameInstance.collectedVariables[varIndex];
+                        span.className = 'filled';
+                    } else {
+                        span.textContent = '?';
+                        span.className = 'placeholder';
+                    }
+                    gameInstance.formulaDisplay.appendChild(span);
+                    varIndex++;
+                } else {
+                    gameInstance.formulaDisplay.appendChild(document.createTextNode(part));
+                }
+            });
+        }
+        
+        function handleIncorrectCollection() {
+            gameInstance.collectedVariables = [];
+            updateFormulaDisplay();
+            gameInstance.formulaDisplay.classList.add('fail');
+            setTimeout(() => gameInstance.formulaDisplay.classList.remove('fail'), 500);
+        }
+        
+        function handleFormulaComplete() {
+            gameInstance.formulaDisplay.classList.add('success');
+            gameInstance.portal = {
+                x: gameInstance.canvas.width - 100,
+                y: Math.random() * (gameInstance.canvas.height - 100),
+                size: 50,
+                rotation: 0
+            };
+            buttons.turboWarp.style.display = 'inline-block';
+            document.getElementById('up-btn').style.display = 'none';
+            document.getElementById('down-btn').style.display = 'none';
+        }
+
+        function drawStarShape(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx; let y = cy;
+            let step = Math.PI / spikes;
+            const ctx = gameInstance.ctx;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y); rot += step;
+                x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y); rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
+        }
+        
+        function handleStars() {
+            if (gameInstance.frame % 75 === 0 && !gameInstance.portal) {
+                let letterToSpawn;
+                const chanceForCorrect = 0.4;
+                if (Math.random() < chanceForCorrect) {
+                    letterToSpawn = gameInstance.targetVariables[gameInstance.collectedVariables.length];
+                } else {
+                    letterToSpawn = gameInstance.allPossibleVars[Math.floor(Math.random() * gameInstance.allPossibleVars.length)];
+                }
+                gameInstance.stars.push({
+                    x: gameInstance.canvas.width, y: Math.random() * (gameInstance.canvas.height - 50),
+                    size: 35,
+                    letter: letterToSpawn,
+                    speed: gameInstance.speed + Math.random() * 2
+                });
+            }
+            for (let i = gameInstance.stars.length - 1; i >= 0; i--) {
+                const star = gameInstance.stars[i];
+                star.x -= star.speed;
+                gameInstance.ctx.fillStyle = '#FFD700';
+                drawStarShape(star.x, star.y, 5, star.size, star.size / 2);
+                gameInstance.ctx.fill();
+                gameInstance.ctx.fillStyle = 'black';
+                gameInstance.ctx.font = 'bold 24px Kanit';
+                gameInstance.ctx.textAlign = 'center'; gameInstance.ctx.textBaseline = 'middle';
+                gameInstance.ctx.fillText(star.letter, star.x, star.y);
+                
+                const player = gameInstance.player;
+                const playerHitboxX = player.x + (player.imgWidth - player.width) / 2;
+                const playerHitboxY = player.y + (player.imgHeight - player.height) / 2;
+                const starHitboxX = star.x - star.size;
+                const starHitboxY = star.y - star.size;
+                const starHitboxSize = star.size * 2;
+
+                if (playerHitboxX < starHitboxX + starHitboxSize && playerHitboxX + player.width > starHitboxX &&
+                    playerHitboxY < starHitboxY + starHitboxSize && playerHitboxY + player.height > starHitboxY) {
+                    
+                    if (!gameInstance.portal) {
+                        const targetLetter = gameInstance.targetVariables[gameInstance.collectedVariables.length];
+                        if (star.letter === targetLetter) {
+                            gameInstance.collectedVariables.push(star.letter);
+                            updateFormulaDisplay();
+                            if(gameInstance.collectedVariables.length === gameInstance.targetVariables.length) {
+                                handleFormulaComplete();
+                            }
+                        } else {
+                            handleIncorrectCollection();
+                        }
+                    }
+                    gameInstance.stars.splice(i, 1);
+                    continue;
+                }
+                if (star.x + star.size < 0) { gameInstance.stars.splice(i, 1); }
+            }
+        }
+        
+        function handlePortal() {
+            const portal = gameInstance.portal;
+            if (!portal) return;
+            portal.rotation += 0.05;
+            const ctx = gameInstance.ctx;
+            ctx.save();
+            ctx.translate(portal.x, portal.y);
+            ctx.rotate(portal.rotation);
+            const gradient = ctx.createRadialGradient(0, 0, portal.size * 0.5, 0, 0, portal.size);
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(0.5, '#9c27b0');
+            gradient.addColorStop(1, '#000');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, portal.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function updatePlayer() {
+            const player = gameInstance.player;
+            player.speedY = 0;
+            if (player.moveUp) player.speedY = -5;
+            if (player.moveDown) player.speedY = 5;
+            player.y += player.speedY;
+            if (player.y < 0) player.y = 0;
+            if (player.y > gameInstance.canvas.height - player.imgHeight) {
+                player.y = gameInstance.canvas.height - player.imgHeight;
+            }
+        }
+        
+        function drawPlayer() {
+            const player = gameInstance.player;
+            gameInstance.ctx.drawImage(player.img, player.x, player.y, player.imgWidth, player.imgHeight);
+        }
+        
+        function initGameLoop() {
+            if (isGamePaused) return;
+
+            if (score >= 10) {
+                gameInstance.speed = Math.min(5, 2 + (score - 10) * 0.05);
+            } else {
+                gameInstance.speed = 2;
+            }
+
+            gameInstance.ctx.clearRect(0, 0, gameInstance.canvas.width, gameInstance.canvas.height);
+            updatePlayer();
+            drawPlayer();
+            handleStars();
+            handlePortal();
+            gameInstance.frame++;
+            animationId = requestAnimationFrame(initGameLoop);
         }
 
         // --- Boss Fight Logic ---
@@ -636,70 +894,57 @@
             const emojis = ['👽', '👾', '🤖', '🎃', '👹', '🤡'];
             const allBossQuestions = [
                 {
-                    type: 'mcq',
-                    id: 1,
+                    type: 'mcq', id: 1,
                     setup: () => {
-                        const u = Math.floor(Math.random() * 5) + 1;
-                        const t = Math.floor(Math.random() * 5) + 2;
-                        const a = 2;
-                        const v = u + a * t;
-                        bossQuestion.textContent = `วัตถุมีความเร็วต้น ${u} m/s เคลื่อนที่ด้วยความเร่ง ${a} m/s² เป็นเวลา ${t} วินาที จะมีความเร็วสุดท้ายเท่าใด?`;
+                        const u = Math.floor(Math.random() * 5) + 1, t = Math.floor(Math.random() * 5) + 2, a = 2, v = u + a * t;
+                        const questionText = `วัตถุมีความเร็วต้น ${u} m/s เคลื่อนที่ด้วยความเร่ง ${a} m/s² เป็นเวลา ${t} วินาที จะมีความเร็วสุดท้ายเท่าใด?`;
+                        bossQuestion.textContent = questionText;
                         const options = [v, v + 2, v - 1].sort(() => Math.random() - 0.5);
                         answerButtons.forEach((btn, i) => {
                             btn.textContent = `${options[i]} m/s`;
-                            btn.onclick = () => handleAnswer(options[i] === v);
+                            btn.onclick = () => handleAnswer(options[i] === v, questionText, `${options[i]} m/s`);
                         });
                     }
                 },
                 {
-                    type: 'fill',
-                    id: 2,
+                    type: 'fill', id: 2,
                     setup: () => {
-                        const v = (Math.floor(Math.random() * 5) + 5) * 2;
-                        const u = Math.floor(Math.random() * 4) * 2;
-                        const t = 2;
-                        const s = 0.5 * (u + v) * t;
-                        bossQuestion.textContent = `รถยนต์เคลื่อนที่ ${t} วินาที จากความเร็ว ${u} m/s เป็น ${v} m/s ได้ระยะทางเท่าใด (m)?`;
-                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === s);
+                        const v = (Math.floor(Math.random() * 5) + 5) * 2, u = Math.floor(Math.random() * 4) * 2, t = 2, s = 0.5 * (u + v) * t;
+                        const questionText = `รถยนต์เคลื่อนที่ ${t} วินาที จากความเร็ว ${u} m/s เป็น ${v} m/s ได้ระยะทางเท่าใด (m)?`;
+                        bossQuestion.textContent = questionText;
+                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === s, questionText, fillInInput.value);
                     }
                 },
                 {
-                    type: 'mcq',
-                    id: 3,
+                    type: 'mcq', id: 3,
                     setup: () => {
-                        const s = (Math.floor(Math.random() * 5) + 5) * 10; // 50, 60...
-                        const t = 10;
-                        const v_avg = s / t;
-                        bossQuestion.textContent = `นักวิ่ง วิ่งได้ระยะทาง ${s} เมตร ในเวลา ${t} วินาที ความเร็วเฉลี่ยของเขาคือเท่าใด?`;
+                        const s = (Math.floor(Math.random() * 5) + 5) * 10, t = 10, v_avg = s / t;
+                        const questionText = `นักวิ่ง วิ่งได้ระยะทาง ${s} เมตร ในเวลา ${t} วินาที ความเร็วเฉลี่ยของเขาคือเท่าใด?`;
+                        bossQuestion.textContent = questionText;
                         const options = [v_avg, v_avg + 1, v_avg - 1].sort(() => Math.random() - 0.5);
                         answerButtons.forEach((btn, i) => {
                             btn.textContent = `${options[i]} m/s`;
-                            btn.onclick = () => handleAnswer(options[i] === v_avg);
+                            btn.onclick = () => handleAnswer(options[i] === v_avg, questionText, `${options[i]} m/s`);
                         });
                     }
                 },
                 {
-                    type: 'fill',
-                    id: 4,
+                    type: 'fill', id: 4,
                     setup: () => {
-                        const u = 20;
-                        const a = -2; // deceleration
-                        const v = 10;
-                        const t = (v - u) / a;
-                        bossQuestion.textContent = `รถเบรกจากความเร็ว ${u} m/s จนเหลือ ${v} m/s ด้วยความหน่วง ${-a} m/s² ต้องใช้เวลากี่วินาที?`;
-                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === t);
+                        const u = 20, a = -2, v = 10, t = (v - u) / a;
+                        const questionText = `รถเบรกจากความเร็ว ${u} m/s จนเหลือ ${v} m/s ด้วยความหน่วง ${-a} m/s² ต้องใช้เวลากี่วินาที?`;
+                        bossQuestion.textContent = questionText;
+                        buttons.submitAnswer.onclick = () => handleAnswer(Number(fillInInput.value) === t, questionText, fillInInput.value);
                     }
                 }
             ];
             
             let questionNumber = 1;
             
-            // Filter out last questions and pick 2 new ones
             const availableQuestions = allBossQuestions.filter(q => !lastBossQuestions.includes(q.id));
             const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
             const questionsForThisRound = shuffled.slice(0, 2);
             lastBossQuestions = questionsForThisRound.map(q => q.id);
-
 
             function setupQuestion(qNum) {
                 fillInInput.value = '';
@@ -707,12 +952,11 @@
                 fillInSection.style.display = 'none';
 
                 const questionData = questionsForThisRound[qNum - 1];
-                if (!questionData) { // Failsafe if we run out of questions
+                if (!questionData) {
                     goToScreen('game');
                     initGame();
                     return;
                 }
-
                 questionData.setup();
                 if(questionData.type === 'mcq') {
                     mcqSection.style.display = 'block';
@@ -721,11 +965,13 @@
                 }
             }
 
-            function handleAnswer(isCorrect) {
+            function handleAnswer(isCorrect, questionText, yourAnswer) {
                 if (isCorrect) {
                     score++;
                     updateScoreDisplay();
                 }
+                answerHistory.push({ question: questionText, yourAnswer, isCorrect });
+
                 if (questionNumber === 1) {
                     questionNumber++;
                     setupQuestion(2);
