@@ -1,0 +1,18 @@
+{
+    "name": "SUVAT Space Boy",
+    "short_name": "SUVAT",
+    "description": "เกมฟิสิกส์สมการการเคลื่อนที่แนวตรง SUVAT สุดมันส์!",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#0a0e1a",
+    "theme_color": "#6C63FF",
+    "icons": [
+        {
+            "src": "assets/images/cover.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
